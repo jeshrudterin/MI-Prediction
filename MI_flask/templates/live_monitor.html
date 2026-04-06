@@ -1,0 +1,352 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Live MI Risk Monitoring</title>
+<script>
+function fetchRisk() {
+    fetch(`/get_risk?` +
+          new URLSearchParams({
+              age: '{{ static_data.age }}',
+              gender_encoded: '{{ static_data.gender_encoded }}',
+              resp_rate: '{{ static_data.resp_rate }}',
+              temperature: '{{ static_data.temperature }}',
+              troponin: '{{ static_data.troponin }}',
+              ck_mb: '{{ static_data.ck_mb }}',
+              ldh: '{{ static_data.ldh }}',
+              cholesterol: '{{ static_data.cholesterol }}',
+              hdl: '{{ static_data.hdl }}',
+              ldl: '{{ static_data.ldl }}',
+              triglycerides: '{{ static_data.triglycerides }}',
+              ecg_st_elevation: '{{ static_data.ecg_st_elevation }}',
+              ecg_q_waves: '{{ static_data.ecg_q_waves }}',
+              family_history_mi: '{{ static_data.family_history_mi }}',
+              diabetes: '{{ static_data.diabetes }}',
+              hypertension: '{{ static_data.hypertension }}',
+              smoker: '{{ static_data.smoker }}',
+              obesity: '{{ static_data.obesity }}',
+              physical_inactivity: '{{ static_data.physical_inactivity }}',
+              alcohol_consumption: '{{ static_data.alcohol_consumption }}',
+              stress_level: '{{ static_data.stress_level }}'
+          }))
+        .then(response => response.json())
+        .then(data => {
+            let statusEl = document.getElementById('status');
+            if(data.status === 'incomplete') {
+                statusEl.textContent = "Waiting for live vitals data...";
+            } else if (data.status === 'complete') {
+                statusEl.innerHTML = `
+                    <b>Final Risk Level:</b> ${data.final_risk} <br>
+                    <b>Model Risk:</b> ${data.ml_risk} <br>
+                    <b>Vitals Risk:</b> ${data.vitals_risk} <br>
+                    <b>Risk Probability:</b> ${data.probability} <br>
+                    <b>Heart Rate:</b> ${data.vitals['Heart Rate']} <br>
+                    <b>SpO2:</b> ${data.vitals['SpO2']} <br>
+                    <b>Blood Pressure:</b> ${data.vitals['Systolic_BP']}/${data.vitals['Diastolic_BP']} <br>
+                `;
+            } else {
+                statusEl.textContent = "Error: " + data.message;
+            }
+        })
+        .catch(err => {
+            document.getElementById('status').textContent = "Failed to fetch risk data.";
+        });
+}
+
+// Poll every 4 seconds
+setInterval(fetchRisk, 4000);
+window.onload = fetchRisk;
+</script>
+</head>
+<body>
+<h1>Live Myocardial Infarction Risk Monitoring</h1>
+<div id="status">Starting live monitoring...</div>
+<form action="/stop_monitoring" method="get">
+    <button type="submit">Stop Monitoring</button>
+</form>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live MI Risk Monitoring</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Light Mode Colors */
+  --bg: linear-gradient(120deg, #e0e7ef 0%, #f5faff 100%);
+  --card-bg: #fff;
+  --shadow: 0 4px 36px #3240541a, 0 1.5px 0 #dbe4ee;
+  --primary: #184c82;
+  --label-bg: #7fadc633;
+  --label-color: #29699c;
+  --status-bg: linear-gradient(90deg,#ecf3fa 80%, #dde9f4 100%);
+  --status-color: #113356;
+  --wait-bg: linear-gradient(90deg,#faffe7 70%, #f3fbdf 100%);
+  --wait-color: #827c1a;
+  --complete-bg: linear-gradient(90deg,#e8f7f4 80%, #e0f0f4 100%);
+  --complete-color: #166e50;
+  --error-bg: #fff1f1;
+  --error-color: #b91c1c;
+  --btn-bg: linear-gradient(90deg,#c4daf8,#abc7df 90%);
+  --btn-bg-h: linear-gradient(90deg,#abc7df,#c4daf8 90%);
+  --btn-color: #204164;
+  --btn-color-h: #122940;
+  --b-bold: #245271;
+}
+body.dark {
+  --bg: linear-gradient(120deg, #23314a 10%, #222e3c 100%);
+  --card-bg: #232c3a;
+  --shadow: 0 4px 36px #0e162824, 0 1.5px 0 #0c1727;
+  --primary: #b2cdf7;
+  --label-bg: #35587655;
+  --label-color: #95deff;
+  --status-bg: linear-gradient(90deg, #233b45 85%, #212e39 100%);
+  --status-color: #b2cdf7;
+  --wait-bg: linear-gradient(90deg,#242d14 70%, #18240f 100%);
+  --wait-color: #e6e4a0;
+  --complete-bg: linear-gradient(60deg,#13374d 80%, #cee9e1 200%);
+  --complete-color: #38e8ac;
+  --error-bg: #42333a;
+  --error-color: #f98698;
+  --btn-bg: linear-gradient(90deg,#406b92,#294365 90%);
+  --btn-bg-h: linear-gradient(90deg,#294365,#406b92 90%);
+  --btn-color: #eef6ff;
+  --btn-color-h: #c2eaff;
+  --b-bold: #a2cee2;
+}
+body {
+  background: var(--bg);
+  min-height: 100vh;
+  font-family: 'Outfit', sans-serif;
+  margin: 0; padding: 0;
+  transition: background 0.4s;
+}
+.main-card {
+  background: var(--card-bg);
+  max-width: 480px;
+  margin: 8vh auto 0 auto;
+  border-radius: 30px;
+  box-shadow: var(--shadow);
+  padding: 46px 36px 32px 36px;
+  position: relative;
+  transition: background 0.4s, box-shadow 0.4s;
+}
+h1 {
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 28px;
+  letter-spacing: -0.03em;
+  transition: color 0.3s;
+}
+#status {
+  background: var(--status-bg);
+  color: var(--status-color);
+  min-height: 124px;
+  margin: 0 0 30px 0;
+  border-radius: 18px;
+  box-shadow: 0 1px 10px #dde5ed44;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 1.17rem;
+  font-weight: 500;
+  padding: 28px 22px;
+  transition: background 0.2s, color 0.2s, box-shadow 0.4s;
+  animation: statusfade 0.6s;
+  z-index: 2;
+  white-space: pre-line;
+  word-break: break-word;
+}
+@keyframes statusfade {
+  from { opacity:0; transform:translateY(18px);}
+  to { opacity:1; transform:translateY(0);}
+}
+.status-wait { background: var(--wait-bg) !important; color: var(--wait-color) !important; font-weight: 700; }
+.status-complete { background: var(--complete-bg) !important; color: var(--complete-color) !important; font-weight: 700; }
+.status-error { background: var(--error-bg) !important; color: var(--error-color) !important; font-weight: 700; }
+form {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+button, #mode-toggle {
+  background: var(--btn-bg);
+  color: var(--btn-color);
+  font-family: inherit;
+  font-size: 1.09rem;
+  padding: 12px 40px;
+  border-radius: 18px;
+  border: none;
+  font-weight: 600;
+  box-shadow:0 1.5px 9px #adc3de14;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.18s, box-shadow 0.2s, color 0.2s;
+}
+button:hover, button:focus, #mode-toggle:hover {
+  background: var(--btn-bg-h);
+  color: var(--btn-color-h);
+  box-shadow:0 2.5px 15px #adc3de33;
+  outline: none;
+}
+#mode-toggle {
+  position: absolute;
+  top: 20px;
+  right: 32px;
+  font-size: 1.04rem;
+  padding: 7px 23px;
+  opacity: 0.93;
+  z-index: 10;
+}
+.livelabel {
+  display: inline-block;
+  font-size: 1.02rem;
+  font-weight: 600;
+  background: var(--label-bg);
+  color: var(--label-color);
+  border-radius: 12px;
+  padding: 5px 14px;
+  margin: 0 0 14px 0;
+  letter-spacing: 0.02em;
+  animation: blink 1.5s infinite;
+}
+@keyframes blink { 0%,100% { opacity: 1;} 60% { opacity: 0.4;} }
+.data-section b { color:var(--b-bold); transition: color 0.3s;}
+.data-section { font-size: 1.09em; margin: 6px 0 0 0; line-height: 1.65;}
+/* Red color for high risk */
+.risk-high {
+  color: #d60000 !important;
+  font-weight: 800;
+}
+@media (max-width: 600px) {
+  .main-card { padding: 29px 4vw 18px 4vw;}
+  #mode-toggle { right: 10px;}
+}
+</style>
+<script>
+// DARK/LIGHT MODE HANDLING
+function setMode(mode) {
+    if (mode === 'dark') {
+        document.body.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+        document.getElementById('mode-toggle').innerText = "☀️ Light Mode";
+    } else {
+        document.body.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        document.getElementById('mode-toggle').innerText = "🌙 Dark Mode";
+    }
+}
+function toggleMode() {
+    if (document.body.classList.contains('dark')) {
+        setMode('light');
+    } else {
+        setMode('dark');
+    }
+}
+window.onload = function() {
+    const theme = localStorage.getItem('theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    setMode(theme);
+    fetchRisk();
+};
+// FETCH LOGIC (unchanged)
+function fetchRisk() {
+    fetch('/get_risk?' +
+        new URLSearchParams({
+            age: '{{ static_data.age }}',
+            gender_encoded: '{{ static_data.gender_encoded }}',
+            resp_rate: '{{ static_data.resp_rate }}',
+            temperature: '{{ static_data.temperature }}',
+            troponin: '{{ static_data.troponin }}',
+            ck_mb: '{{ static_data.ck_mb }}',
+            ldh: '{{ static_data.ldh }}',
+            cholesterol: '{{ static_data.cholesterol }}',
+            hdl: '{{ static_data.hdl }}',
+            ldl: '{{ static_data.ldl }}',
+            triglycerides: '{{ static_data.triglycerides }}',
+            ecg_st_elevation: '{{ static_data.ecg_st_elevation }}',
+            ecg_q_waves: '{{ static_data.ecg_q_waves }}',
+            family_history_mi: '{{ static_data.family_history_mi }}',
+            diabetes: '{{ static_data.diabetes }}',
+            hypertension: '{{ static_data.hypertension }}',
+            smoker: '{{ static_data.smoker }}',
+            obesity: '{{ static_data.obesity }}',
+            physical_inactivity: '{{ static_data.physical_inactivity }}',
+            alcohol_consumption: '{{ static_data.alcohol_consumption }}',
+            stress_level: '{{ static_data.stress_level }}'
+        }))
+        .then(response => response.json())
+        .then(data => {
+            let statusEl = document.getElementById('status');
+            statusEl.classList.remove('status-wait','status-complete','status-error');
+            if(data.status === 'incomplete') {
+                statusEl.textContent = "Waiting for live vitals data...";
+                statusEl.classList.add('status-wait');
+                statusEl.innerHTML = '<span class="livelabel">Live</span> Waiting for live vitals data...';
+            } else if (data.status === 'complete') {
+                statusEl.classList.add('status-complete');
+                  // Helper to check if value is high
+                  function riskClass(val) {
+                    return (typeof val === 'string' && val.trim().toLowerCase() === 'high') ? 'risk-high' : '';
+                  }
+                  statusEl.innerHTML =
+                      '<span class="livelabel">Live</span>' +
+                      '<div class="data-section">' +
+                      `<b>Final Risk Level:</b> <span class="${riskClass(data.final_risk)}">${data.final_risk}</span><br>` +
+                      `<b>Model Risk:</b> <span class="${riskClass(data.ml_risk)}">${data.ml_risk}</span><br>` +
+                      `<b>Vitals Risk:</b> <span class="${riskClass(data.vitals_risk)}">${data.vitals_risk}</span><br>` +
+                      '<b>Risk Probability:</b> ' + data.probability + '<br>' +
+                      '<b>Heart Rate:</b> ' + (data.vitals ? data.vitals["Heart Rate"] : "--") + '<br>' +
+                      '<b>SpO2:</b> ' + (data.vitals ? data.vitals["SpO2"] : "--") + '<br>' +
+                      '<b>Blood Pressure:</b> ' + (data.vitals ? data.vitals["Systolic_BP"] : "-") + '/' + (data.vitals ? data.vitals["Diastolic_BP"] : "-") +
+                      '</div>';
+        // Play beep if final risk is high
+        if (typeof data.final_risk === 'string' && data.final_risk.trim().toLowerCase() === 'high') {
+          playBeep();
+        }
+            } else {
+                statusEl.textContent = "Error: " + data.message;
+                statusEl.classList.add('status-error');
+            }
+        })
+        .catch(err => {
+            let statusEl = document.getElementById('status');
+            statusEl.textContent = "Failed to fetch risk data.";
+            statusEl.classList.add('status-error');
+        });
+}
+setInterval(fetchRisk, 4000);
+// Beep sound function
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = ctx.createOscillator();
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(1000, ctx.currentTime); // 1000 Hz
+    oscillator.connect(ctx.destination);
+    oscillator.start();
+    setTimeout(() => {
+      oscillator.stop();
+      ctx.close();
+    }, 300); // 300ms beep
+  } catch (e) {
+    // Ignore errors (e.g., user gesture required)
+  }
+}
+</script>
+</head>
+<body>
+<div class="main-card">
+    <button id="mode-toggle" onclick="toggleMode()" type="button">🌙 Dark Mode</button>
+    <h1>Live Myocardial Infarction Risk Monitoring</h1>
+    <div id="status" class="status-wait">Starting live monitoring...</div>
+    <form action="/stop_monitoring" method="get">
+        <button type="submit">Stop Monitoring</button>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MI Risk Prediction - Start</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background: #0f172a;
+    color: #ffffff;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Subtle animated background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.05) 0%, transparent 50%);
+    z-index: 0;
+    animation: backgroundShift 20s ease-in-out infinite;
+}
+
+@keyframes backgroundShift {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 24px;
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(148, 163, 184, 0.05);
+    padding: 48px;
+    backdrop-filter: blur(16px);
+    position: relative;
+    z-index: 2;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 48px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    padding-bottom: 32px;
+}
+
+h1 {
+    font-size: 3.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.subtitle {
+    font-size: 1.125rem;
+    color: #94a3b8;
+    font-weight: 400;
+    line-height: 1.7;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+.info-card {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+}
+
+.info-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(148, 163, 184, 0.2);
+    background: rgba(30, 41, 59, 0.8);
+}
+
+.card-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #60a5fa;
+    font-size: 1.25rem;
+    margin-bottom: 16px;
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+.card-description {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    line-height: 1.5;
+}
+
+.form-section {
+    background: rgba(30, 41, 59, 0.3);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    border-radius: 20px;
+    padding: 40px;
+    margin-bottom: 32px;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section-title::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: #3b82f6;
+    border-radius: 2px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.form-group {
+    position: relative;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+}
+
+.form-input, .form-select {
+    width: 100%;
+    padding: 16px 20px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 400;
+    color: #ffffff;
+    transition: all 0.3s ease;
+    outline: none;
+    font-family: 'Outfit', sans-serif;
+}
+
+.form-input::placeholder {
+    color: #64748b;
+}
+
+.form-input:focus, .form-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background: rgba(15, 23, 42, 1);
+}
+
+.form-input:hover, .form-select:hover {
+    border-color: rgba(148, 163, 184, 0.3);
+}
+
+.input-with-icon {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #64748b;
+    font-size: 1.1rem;
+    padding: 4px;
+    transition: all 0.2s ease;
+}
+
+.toggle-password:hover {
+    color: #3b82f6;
+}
+
+.submit-section {
+    text-align: center;
+    padding-top: 24px;
+    border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.submit-button {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 18px 48px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.02em;
+    min-width: 200px;
+    font-family: 'Outfit', sans-serif;
+}
+
+.submit-button:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px 0 rgba(59, 130, 246, 0.4);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+.submit-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.submit-button:hover::before {
+    left: 100%;
+}
+
+.dark-mode-toggle {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #94a3b8;
+    transition: all 0.3s ease;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+}
+
+.dark-mode-toggle:hover {
+    transform: scale(1.05);
+    border-color: rgba(148, 163, 184, 0.3);
+    color: #ffffff;
+}
+
+/* Light Mode Styles */
+.light-mode {
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+.light-mode::before {
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
+}
+
+.light-mode .container {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(226, 232, 240, 0.5);
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(226, 232, 240, 0.2);
+}
+
+.light-mode h1 {
+    color: #1e293b;
+}
+
+.light-mode .subtitle {
+    color: #64748b;
+}
+
+.light-mode .header {
+    border-bottom-color: rgba(226, 232, 240, 0.8);
+}
+
+.light-mode .info-card {
+    background: rgba(248, 250, 252, 0.8);
+    border: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.light-mode .info-card:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(226, 232, 240, 0.8);
+}
+
+.light-mode .card-title {
+    color: #1e293b;
+}
+
+.light-mode .form-section {
+    background: rgba(248, 250, 252, 0.5);
+    border: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.light-mode .section-title {
+    color: #1e293b;
+}
+
+.light-mode .form-label {
+    color: #374151;
+}
+
+.light-mode .form-input,
+.light-mode .form-select {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(209, 213, 219, 0.8);
+    color: #1f2937;
+}
+
+.light-mode .form-input::placeholder {
+    color: #9ca3af;
+}
+
+.light-mode .form-input:focus,
+.light-mode .form-select:focus {
+    border-color: #3b82f6;
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.light-mode .form-input:hover,
+.light-mode .form-select:hover {
+    border-color: rgba(156, 163, 175, 0.8);
+}
+
+.light-mode .toggle-password {
+    color: #6b7280;
+}
+
+.light-mode .toggle-password:hover {
+    color: #3b82f6;
+}
+
+.light-mode .submit-section {
+    border-top-color: rgba(226, 232, 240, 0.8);
+}
+
+.light-mode .dark-mode-toggle {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    color: #6b7280;
+}
+
+.light-mode .dark-mode-toggle:hover {
+    border-color: rgba(156, 163, 175, 0.8);
+    color: #374151;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 32px 24px;
+        margin: 10px;
+        border-radius: 20px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .info-cards {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    h1 {
+        font-size: 2.5rem;
+    }
+    
+    .form-section {
+        padding: 24px;
+    }
+    
+    .submit-button {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .dark-mode-toggle {
+        width: 48px;
+        height: 48px;
+        top: 16px;
+        right: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 24px 16px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .form-section {
+        padding: 20px;
+    }
+}
+
+/* Smooth animations */
+.container {
+    animation: slideInUp 0.8s ease forwards;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.info-card {
+    animation: fadeIn 0.6s ease forwards;
+    animation-delay: calc(var(--delay, 0) * 0.1s);
+}
+
+.info-card:nth-child(1) { --delay: 1; }
+.info-card:nth-child(2) { --delay: 2; }
+.info-card:nth-child(3) { --delay: 3; }
+.info-card:nth-child(4) { --delay: 4; }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.6);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.8);
+}
+
+.light-mode ::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.5);
+}
+
+.light-mode ::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.4);
+}
+
+.light-mode ::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.6);
+}
+    </style>
+</head>
+<body>
+    <!-- Background video -->
+    <video id="bg-video" autoplay loop muted playsinline style="position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:cover;z-index:-1;">
+        <source src="{{ url_for('static', filename='highrisk.mp4') }}" type="video/mp4">
+    </video>
+    <button class="dark-mode-toggle" title="Toggle light/dark mode">
+        <i class="fa-solid fa-sun"></i>
+    </button>
+    
+    <div class="container">
+        <div class="header">
+            <h1><i class="fa-solid fa-heart-pulse"></i> MI Risk Prediction</h1>
+            <div class="subtitle">Advanced cardiac risk assessment system with real-time monitoring capabilities for comprehensive patient evaluation and care management</div>
+        </div>
+        
+        <div class="info-cards">
+            <div class="info-card">
+                <div class="card-icon">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="card-title">Predictive Analytics</div>
+                <div class="card-description">Advanced machine learning algorithms for accurate risk prediction and early intervention strategies</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="card-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="card-title">Secure Monitoring</div>
+                <div class="card-description">Enterprise-grade security with encrypted data transmission and HIPAA-compliant storage protocols</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="card-icon">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div class="card-title">Real-time Analysis</div>
+                <div class="card-description">Continuous monitoring with instant alerts and comprehensive reporting for healthcare providers</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="card-icon">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div class="card-title">AI-Powered Insights</div>
+                <div class="card-description">Intelligent pattern recognition and personalized risk assessment based on comprehensive patient data</div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <div class="section-title">Patient Data Input</div>
+            
+            <form method="POST" autocomplete="off">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Age</label>
+                        <input name="age" type="number" step="0.01" class="form-input" placeholder="Patient age in years" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Gender</label>
+                        <select name="gender" class="form-select">
+                            <option>Male</option>
+                            <option>Female</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Respiration Rate</label>
+                        <input name="resp_rate" type="number" step="0.01" class="form-input" placeholder="Breaths per minute" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Temperature (°C)</label>
+                        <input name="temperature" type="number" step="0.01" class="form-input" placeholder="Body temperature" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Troponin Level</label>
+                        <input name="troponin" type="number" step="0.01" class="form-input" placeholder="ng/mL" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">CK-MB Level</label>
+                        <input name="ck_mb" type="number" step="0.01" class="form-input" placeholder="ng/mL" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">LDH Level</label>
+                        <input name="ldh" type="number" step="0.01" class="form-input" placeholder="U/L" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Cholesterol Level</label>
+                        <input name="cholesterol" type="number" step="0.01" class="form-input" placeholder="mg/dL" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">HDL Level</label>
+                        <input name="hdl" type="number" step="0.01" class="form-input" placeholder="mg/dL" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">LDL Level</label>
+                        <input name="ldl" type="number" step="0.01" class="form-input" placeholder="mg/dL" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Triglycerides</label>
+                        <input name="triglycerides" type="number" step="0.01" class="form-input" placeholder="mg/dL" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">ECG ST Elevation</label>
+                        <select name="ecg_st_elevation" class="form-select" required>
+                            <option value="">Select option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">ECG Q Waves</label>
+                        <select name="ecg_q_waves" class="form-select" required>
+                            <option value="">Select option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Family History of MI</label>
+                        <select name="family_history_mi" class="form-select" required>
+                            <option value="">Select option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Diabetes</label>
+                        <select name="diabetes" class="form-select" required>
+                            <option value="">Select option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Hypertension</label>
+                        <select name="hypertension" class="form-select" required>
+                            <option value="">Select option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Smoker</label>
+                        <select name="smoker" class="form-select" required>
+                            <option value="">Select option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Obesity</label>
+                        <select name="obesity" class="form-select" required>
+                            <option value="">Select option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Physical Inactivity</label>
+                        <select name="physical_inactivity" class="form-select" required>
+                            <option value="">Select option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Alcohol Consumption</label>
+                        <select name="alcohol_consumption" class="form-select" required>
+                            <option value="">Select option</option>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Stress Level (0-10)</label>
+                        <input name="stress_level" type="number" min="0" max="10" class="form-input" placeholder="Scale from 0 to 10" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Resus Monitor Session ID</label>
+                        <div class="input-with-icon">
+                            <input name="session_id" type="password" id="session_id" class="form-input" placeholder="Enter secure session identifier" required>
+                            <span class="toggle-password" onclick="toggleSessionId()" title="Toggle visibility">
+                                <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="submit-section">
+                    <button type="submit" class="submit-button">
+                        <i class="fa-solid fa-play"></i>
+                        Initialize Monitoring System
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Light/Dark mode toggle
+        document.querySelector('.dark-mode-toggle').addEventListener('click', function() {
+            document.body.classList.toggle('light-mode');
+            let icon = this.querySelector('i');
+            
+            if (document.body.classList.contains('light-mode')) {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            } else {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+        });
+        
+        // Toggle session ID visibility
+        function toggleSessionId() {
+            const input = document.getElementById('session_id');
+            const icon = document.getElementById('eyeIcon');
+            
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+        
+        // Enhanced form interactions
+        const formInputs = document.querySelectorAll('.form-input, .form-select');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.transform = 'translateY(-1px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html>

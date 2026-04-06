@@ -1,0 +1,9 @@
+Flask==3.0.3
+gunicorn==23.0.0
+pandas
+xgboost
+selenium>=4.6.0
+selenium>=4.6.0
+webdriver-manager
+
+scikit-learn
